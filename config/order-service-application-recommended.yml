@@ -1,0 +1,35 @@
+# application.yml của order-service — CẤU HÌNH KHUYẾN NGHỊ
+# Mục tiêu: luôn tra cứu danh sách instance mới nhất của restaurant-service qua Eureka,
+# không hard-code địa chỉ IP:port cố định.
+
+spring:
+  application:
+    name: order-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/   # nhớ có dấu "/" cuối
+    registry-fetch-interval-seconds: 5   # đồng bộ registry mỗi 5s để cập nhật danh sách instance nhanh hơn
+    register-with-eureka: true
+    fetch-registry: true
+
+  instance:
+    prefer-ip-address: true
+
+# Bật load balancing tự động qua Spring Cloud LoadBalancer (dùng cho RestTemplate/WebClient/Feign)
+spring.cloud.loadbalancer.ribbon.enabled: false   # dùng Spring Cloud LoadBalancer thay cho Ribbon (đã deprecated)
+
+# Cấu hình chịu lỗi (khuyến nghị) để không phụ thuộc hoàn toàn vào tốc độ phát hiện của Eureka
+resilience4j:
+  circuitbreaker:
+    instances:
+      restaurantService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5s
+  retry:
+    instances:
+      restaurantService:
+        max-attempts: 2
+        wait-duration: 200ms

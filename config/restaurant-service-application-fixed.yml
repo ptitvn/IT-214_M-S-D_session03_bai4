@@ -1,0 +1,30 @@
+# application.yml của restaurant-service — ĐÃ SỬA
+# Các thay đổi so với bản gốc:
+#   1. spring.application.name -> đổi về kebab-case, thống nhất với order-service, payment-service
+#   2. eureka.client.service-url.defaultZone -> thêm dấu "/" ở cuối (bắt buộc theo cú pháp Eureka Client)
+#   3. Khai báo tường minh register-with-eureka và fetch-registry để tránh nhầm lẫn khi đọc code
+#   4. Bổ sung eureka.instance.instance-id để phân biệt rõ từng instance khi có nhiều bản chạy song song
+#   5. Khai báo prefer-ip-address để order-service gọi thẳng qua IP thay vì hostname (phù hợp môi trường container)
+
+server:
+  port: 0   # để mỗi instance tự chọn cổng ngẫu nhiên khi chạy nhiều bản song song trên cùng máy/host
+
+spring:
+  application:
+    name: restaurant-service   # (1) FIX: kebab-case, đồng nhất toàn hệ thống
+
+eureka:
+  client:
+    service-url:
+      # (2) FIX: bắt buộc phải có dấu "/" ở cuối, nếu không Eureka Client sẽ build sai URL
+      #     khi gọi các API đăng ký/tra cứu (VD: .../eurekaapps/... thay vì .../eureka/apps/...)
+      defaultZone: http://eureka-server:8761/eureka/
+    register-with-eureka: true   # (3) khai báo tường minh: instance này sẽ tự đăng ký vào Eureka Server
+    fetch-registry: true         # (3) khai báo tường minh: instance này sẽ tải registry về để tra cứu service khác (nếu cần)
+    registry-fetch-interval-seconds: 10   # rút ngắn chu kỳ đồng bộ để phát hiện thay đổi nhanh hơn
+
+  instance:
+    prefer-ip-address: true      # (5) đăng ký bằng IP thay vì hostname, phù hợp với môi trường Docker/K8s
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}   # (4) ID duy nhất cho từng instance
+    lease-renewal-interval-in-seconds: 10     # heartbeat mỗi 10s (mặc định 30s) — phát hiện sự cố nhanh hơn
+    lease-expiration-duration-in-seconds: 30  # sau 30s không nhận heartbeat thì coi là chết (mặc định 90s)

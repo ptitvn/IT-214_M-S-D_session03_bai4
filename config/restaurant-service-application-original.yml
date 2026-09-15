@@ -1,0 +1,18 @@
+# application.yml của restaurant-service — BẢN GỐC (CÓ LỖI, để đối chiếu)
+
+spring:
+  application:
+    name: RestaurantService   # Không nhất quán chữ hoa/thường với các service khác
+
+eureka:
+  client:
+    service-url:
+      # Thiếu dấu / ở cuối, khiến Eureka Client không đăng ký được
+      defaultZone: http://eureka-server:8761/eureka
+    # Thiếu register-with-eureka và fetch-registry (mặc định true là đúng,
+    # nhưng thiếu khai báo rõ ràng dễ gây nhầm lẫn khi đọc code)
+
+
+
+#cabajggj
+#aaa
